@@ -1,0 +1,28 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+npm-debug.log*
+
+# Dependencies
+node_modules/
+
+# Config (sensitive)
+*.env
+.env.local
+config.json
+clawdbot.json
+
+# Temporary
+*.tmp
+*.temp
+.cache/
