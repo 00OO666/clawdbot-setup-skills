@@ -53,6 +53,7 @@ description: |
 4. 安装 Windows Node Client
 5. 配对 Node Client
 6. 运行测试验证
+7. 配置系统权限（可选）
 
 ### 步骤 3: 安装 WSL2 Gateway
 
@@ -230,6 +231,103 @@ Clawdbot 应该会回复！
 在我的电脑上运行：hostname
 ```
 
+### 步骤 8: 配置系统权限（可选但推荐）
+
+**8.1 询问用户是否授予完整权限**
+
+使用 AskUserQuestion 工具询问：
+
+```
+问题："是否授予 Clawdbot 完整的系统操作权限？"
+
+选项：
+1. "是，授予完整权限（推荐）"
+   - 允许 Clawdbot 执行所有 PowerShell 命令
+   - 允许修改系统文件和注册表
+   - 允许安装/卸载软件
+   - 提供最佳使用体验
+
+2. "否，保持默认权限"
+   - 仅允许基本文件操作
+   - 部分 PowerShell 命令可能被限制
+   - 某些系统操作需要手动确认
+```
+
+**8.2 如果用户选择"是"，执行以下配置**
+
+**8.2.1 修改 PowerShell 执行策略**
+
+```powershell
+# 需要管理员权限
+pwsh -Command 'Start-Process pwsh -Verb RunAs -ArgumentList "-Command Set-ExecutionPolicy RemoteSigned -Scope LocalMachine -Force"'
+```
+
+**8.2.2 更新 Clawdbot 配置文件**
+
+在 WSL2 中编辑 `~/.clawdbot/clawdbot.json`，添加权限配置：
+
+```json
+{
+  "providers": {
+    "anthropic": {
+      "apiKey": "{用户的API Key}"
+    }
+  },
+  "model": "anthropic/claude-opus-4-5",
+  "gateway": {
+    "bind": "lan",
+    "port": {端口},
+    "auth": {
+      "mode": "token",
+      "token": "{用户的Gateway Token}"
+    }
+  },
+  "channels": {
+    "whatsapp": {
+      "enabled": true,
+      "selfChatMode": true,
+      "dmPolicy": "allowlist",
+      "allowFrom": ["{用户的手机号}"]
+    }
+  },
+  "security": {
+    "allowShellCommands": true,
+    "allowFileOperations": true,
+    "allowSystemModifications": true,
+    "restrictedPaths": []
+  }
+}
+```
+
+**8.2.3 重启服务使配置生效**
+
+```bash
+# 重启 Gateway
+wsl -d {发行版名称} -e bash -c 'clawdbot gateway restart'
+
+# 重启 Node Client
+pwsh -Command 'clawdbot node restart'
+```
+
+**8.2.4 验证权限配置**
+
+在 WhatsApp 中测试高权限命令：
+```
+在我的电脑上运行：Get-Process | Select-Object -First 5
+```
+
+**8.3 如果用户选择"否"**
+
+告知用户：
+```
+✅ 保持默认权限设置
+
+注意事项：
+- 某些 PowerShell 命令可能需要手动确认
+- 系统文件操作可能受限
+- 如需更改，可随时运行：Set-ExecutionPolicy RemoteSigned
+```
+
 ## 💡 使用示例
 
 ### 示例 1: 完整安装流程
@@ -255,6 +353,7 @@ TaskCreate: WhatsApp 扫码登录
 TaskCreate: 安装 Windows Node Client
 TaskCreate: 配对 Node Client
 TaskCreate: 运行测试验证
+TaskCreate: 配置系统权限（可选）
 ```
 
 3. **执行安装**
