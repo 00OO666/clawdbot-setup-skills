@@ -32,17 +32,59 @@ description: |
 
 ### 步骤 1: 收集配置信息
 
-使用 AskUserQuestion 工具收集以下信息：
+**1.1 询问 AI 模型配置**
 
-**必需信息**：
-- Claude API Key（或其他 AI API Key）
+使用 AskUserQuestion 工具询问：
+
+```
+问题："你想使用哪个 AI 模型？"
+
+选项：
+1. "Claude（Anthropic 官方 API）"
+   - 使用 Anthropic 官方 API
+   - 需要 Anthropic API Key
+   - 稳定可靠
+
+2. "Claude（第三方 API，如 Crush）"
+   - 使用第三方代理 API
+   - 需要第三方 API Key 和基础地址
+   - 可能更便宜或有特殊功能
+
+3. "OpenAI（GPT-4/GPT-3.5）"
+   - 使用 OpenAI 的 GPT 模型
+   - 需要 OpenAI API Key
+   - 支持 GPT-4、GPT-3.5-turbo 等
+
+4. "其他模型"
+   - 自定义配置
+```
+
+**1.2 根据选择收集对应信息**
+
+**如果选择 "Claude（Anthropic 官方 API）"**：
+- API Key（从 https://console.anthropic.com 获取）
+- 模型名称（默认：claude-opus-4-5）
+
+**如果选择 "Claude（第三方 API）"**：
+- API Key（从第三方服务商获取）
+- API 基础地址（如：https://api.crush.com/v1）
+- 模型名称（如：claude-opus-4-5）
+
+**如果选择 "OpenAI"**：
+- API Key（从 https://platform.openai.com 获取）
+- 模型名称（如：gpt-4、gpt-3.5-turbo）
+- API 基础地址（可选，默认官方）
+
+**1.3 收集 WhatsApp 配置**
+
 - 手机号码（E.164 格式，如 +8613800138000）
-- Gateway 认证 Token（用户自定义密码）
+- 是否启用自聊模式（默认：是）
 
-**可选信息**：
+**1.4 收集其他配置**
+
+- Gateway 认证 Token（用户自定义密码）
 - WSL2 发行版名称（默认：Ubuntu）
 - Gateway 端口（默认：18789）
-- 是否启用自聊模式（默认：是）
 
 ### 步骤 2: 创建安装任务
 
@@ -79,7 +121,7 @@ wsl -d {发行版名称} -e bash -c 'npm install -g clawdbot'
 
 使用 Bash 工具在 WSL2 中创建 `~/.clawdbot/clawdbot.json`：
 
-**自聊模式配置**（推荐）：
+**配置 A：Claude（Anthropic 官方 API）+ 自聊模式**
 ```json
 {
   "providers": {
@@ -87,7 +129,7 @@ wsl -d {发行版名称} -e bash -c 'npm install -g clawdbot'
       "apiKey": "{用户的API Key}"
     }
   },
-  "model": "anthropic/claude-opus-4-5",
+  "model": "anthropic/{模型名称}",
   "gateway": {
     "bind": "lan",
     "port": {端口},
@@ -107,7 +149,66 @@ wsl -d {发行版名称} -e bash -c 'npm install -g clawdbot'
 }
 ```
 
-**备用号码配置**：
+**配置 B：Claude（第三方 API，如 Crush）+ 自聊模式**
+```json
+{
+  "providers": {
+    "anthropic": {
+      "apiKey": "{用户的API Key}",
+      "baseURL": "{用户的API基础地址}"
+    }
+  },
+  "model": "anthropic/{模型名称}",
+  "gateway": {
+    "bind": "lan",
+    "port": {端口},
+    "auth": {
+      "mode": "token",
+      "token": "{用户的Gateway Token}"
+    }
+  },
+  "channels": {
+    "whatsapp": {
+      "enabled": true,
+      "selfChatMode": true,
+      "dmPolicy": "allowlist",
+      "allowFrom": ["{用户的手机号}"]
+    }
+  }
+}
+```
+
+**配置 C：OpenAI（GPT-4/GPT-3.5）+ 自聊模式**
+```json
+{
+  "providers": {
+    "openai": {
+      "apiKey": "{用户的API Key}"
+    }
+  },
+  "model": "openai/{模型名称}",
+  "gateway": {
+    "bind": "lan",
+    "port": {端口},
+    "auth": {
+      "mode": "token",
+      "token": "{用户的Gateway Token}"
+    }
+  },
+  "channels": {
+    "whatsapp": {
+      "enabled": true,
+      "selfChatMode": true,
+      "dmPolicy": "allowlist",
+      "allowFrom": ["{用户的手机号}"]
+    }
+  }
+}
+```
+
+**配置 D：备用号码模式（不使用自聊）**
+
+如果用户不启用自聊模式，将 `selfChatMode` 设置为 `false` 或删除该字段：
 ```json
 {
   "channels": {
@@ -119,6 +220,8 @@ wsl -d {发行版名称} -e bash -c 'npm install -g clawdbot'
   }
 }
 ```
+
+**注意**：根据用户在步骤 1.1 中的选择，使用对应的配置模板。
 
 **3.5 启动 Gateway**
 ```bash
