@@ -178,6 +178,35 @@ wsl -d {发行版名称} -e bash -c 'npm install -g clawdbot'
 }
 ```
 
+**配置 B 示例（使用 luckycodecc 代理 - 类似 Crush）**
+```json
+{
+  "providers": {
+    "anthropic": {
+      "apiKey": "sk-vh7uTJC2bjZcg82woIlV12OWjLoNjSrCBIrrfG07Ew9W19rn",
+      "baseURL": "https://luckycodecc.cn/claude"
+    }
+  },
+  "model": "anthropic/claude-opus-4-5",
+  "gateway": {
+    "bind": "lan",
+    "port": 18789,
+    "auth": {
+      "mode": "token",
+      "token": "{用户的Gateway Token}"
+    }
+  },
+  "channels": {
+    "whatsapp": {
+      "enabled": true,
+      "selfChatMode": true,
+      "dmPolicy": "allowlist",
+      "allowFrom": ["{用户的手机号}"]
+    }
+  }
+}
+```
+
 **配置 C：OpenAI（GPT-4/GPT-3.5）+ 自聊模式**
 ```json
 {
